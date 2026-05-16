@@ -1,51 +1,7 @@
-const Groq = require("groq-sdk")
-
-const groq = new Groq({
-    apiKey: process.env.GROQ_API_KEY
-})
-
-async function generateInterviewReport({ resume, selfDescription, jobDescription }) {
-    const prompt = `Generate an interview report for a candidate with the following details:
-Resume: ${resume}
-Self Description: ${selfDescription}
-Job Description: ${jobDescription}
-
-Respond ONLY with a valid JSON object (no markdown, no backticks) with this exact structure:
-{
-  "matchScore": <number 0-100>,
-  "title": "<job title string>",
-  "technicalQuestions": [
-    { "question": "<string>", "intention": "<string>", "answer": "<string>" }
-  ],
-  "behavioralQuestions": [
-    { "question": "<string>", "intention": "<string>", "answer": "<string>" }
-  ],
-  "skillGaps": [
-    { "skill": "<string>", "severity": "<low|medium|high>" }
-  ],
-  "preparationPlan": [
-    { "day": <number>, "focus": "<string>", "tasks": ["<string>"] }
-  ]
-}
-
-Include 5 technical questions, 5 behavioral questions, 3-5 skill gaps, and a 7-day preparation plan.`
-
-    const response = await groq.chat.completions.create({
-        model: "llama-3.3-70b-versatile",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.7,
-        max_tokens: 4000,
-    })
-
-    const text = response.choices[0].message.content.trim()
-    const clean = text.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "").trim()
-    return JSON.parse(clean)
-}
-
 async function generateResumePdf({ resume, selfDescription, jobDescription }) {
     const { jsPDF } = require("jspdf")
 
-    const prompt = `Generate a professional resume as plain text for a candidate with these details:
+    const prompt = `Generate a professional resume for a candidate with these details:
 Resume/Experience: ${resume}
 Self Description: ${selfDescription}
 Job Description: ${jobDescription}
@@ -55,11 +11,15 @@ Respond ONLY with a valid JSON object (no markdown, no backticks):
   "name": "<full name>",
   "email": "<email>",
   "phone": "<phone>",
-  "summary": "<professional summary>",
-  "skills": ["<skill1>", "<skill2>"],
-  "experience": [{ "title": "<title>", "company": "<company>", "duration": "<duration>", "points": ["<point1>"] }],
-  "education": [{ "degree": "<degree>", "institution": "<institution>", "year": "<year>" }],
-  "projects": [{ "name": "<name>", "description": "<description>", "tech": "<tech stack>" }]
+  "location": "<city, country>",
+  "linkedin": "<linkedin url or empty>",
+  "github": "<github url or empty>",
+  "summary": "<2-3 line professional summary tailored to job>",
+  "skills": ["<skill1>", "<skill2>", "<skill3>"],
+  "experience": [{ "title": "<title>", "company": "<company>", "duration": "<duration>", "points": ["<point1>", "<point2>"] }],
+  "education": [{ "degree": "<degree>", "institution": "<institution>", "year": "<year>", "grade": "<grade or CGPA>" }],
+  "projects": [{ "name": "<name>", "description": "<2 line description>", "tech": "<tech stack>", "link": "<live link or empty>" }],
+  "certifications": ["<cert1>", "<cert2>"]
 }`
 
     const response = await groq.chat.completions.create({
@@ -73,75 +33,152 @@ Respond ONLY with a valid JSON object (no markdown, no backticks):
     const clean = text.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "").trim()
     const data = JSON.parse(clean)
 
-    const doc = new jsPDF()
-    let y = 20
+    const doc = new jsPDF({ unit: "mm", format: "a4" })
+    const W = 210
+    const margin = 15
+    const contentW = W - margin * 2
+    let y = 0
 
-    const addLine = (text, size = 11, bold = false) => {
+    const checkPage = (needed = 8) => {
+        if (y + needed > 280) { doc.addPage(); y = 15 }
+    }
+
+    // ── HEADER BACKGROUND ──
+    doc.setFillColor(30, 58, 95)
+    doc.rect(0, 0, W, 42, "F")
+
+    // Name
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(22)
+    doc.setFont("helvetica", "bold")
+    doc.text(data.name || "Resume", margin, 16)
+
+    // Contact line
+    doc.setFontSize(8.5)
+    doc.setFont("helvetica", "normal")
+    const contacts = [data.email, data.phone, data.location, data.linkedin, data.github]
+        .filter(Boolean).join("  |  ")
+    doc.text(contacts, margin, 24)
+
+    // Summary in header
+    if (data.summary) {
+        doc.setFontSize(9)
+        const summaryLines = doc.splitTextToSize(data.summary, contentW)
+        doc.text(summaryLines, margin, 32)
+    }
+
+    y = 50
+    doc.setTextColor(0, 0, 0)
+
+    const sectionTitle = (title) => {
+        checkPage(12)
+        y += 3
+        doc.setFillColor(30, 58, 95)
+        doc.rect(margin, y, contentW, 7, "F")
+        doc.setTextColor(255, 255, 255)
+        doc.setFontSize(10)
+        doc.setFont("helvetica", "bold")
+        doc.text(title, margin + 3, y + 5)
+        doc.setTextColor(0, 0, 0)
+        y += 10
+    }
+
+    const bulletLine = (text, indent = margin + 4) => {
+        checkPage(6)
+        doc.setFontSize(9)
+        doc.setFont("helvetica", "normal")
+        const lines = doc.splitTextToSize(`• ${text}`, contentW - 6)
+        lines.forEach(line => {
+            doc.text(line, indent, y)
+            y += 5
+        })
+    }
+
+    const normalLine = (text, size = 9, bold = false) => {
+        checkPage(6)
         doc.setFontSize(size)
         doc.setFont("helvetica", bold ? "bold" : "normal")
-        const lines = doc.splitTextToSize(text, 180)
+        const lines = doc.splitTextToSize(text, contentW)
         lines.forEach(line => {
-            if (y > 270) { doc.addPage(); y = 20 }
-            doc.text(line, 15, y)
-            y += size * 0.5 + 2
+            doc.text(line, margin, y)
+            y += size * 0.45 + 2
         })
     }
 
-    const addSection = (title) => {
-        y += 4
-        addLine(title, 13, true)
-        doc.setDrawColor(200)
-        doc.line(15, y, 195, y)
-        y += 4
-    }
-
-    // Header
-    addLine(data.name || "Resume", 18, true)
-    if (data.email || data.phone) {
-        addLine(`${data.email || ""} | ${data.phone || ""}`, 10)
-    }
-
-    // Summary
-    if (data.summary) {
-        addSection("PROFESSIONAL SUMMARY")
-        addLine(data.summary)
-    }
-
-    // Skills
+    // ── SKILLS ──
     if (data.skills?.length) {
-        addSection("SKILLS")
-        addLine(data.skills.join(" • "))
+        sectionTitle("TECHNICAL SKILLS")
+        const skillGroups = []
+        for (let i = 0; i < data.skills.length; i += 6) {
+            skillGroups.push(data.skills.slice(i, i + 6).join("  •  "))
+        }
+        skillGroups.forEach(g => normalLine(g))
+        y += 2
     }
 
-    // Experience
+    // ── EXPERIENCE ──
     if (data.experience?.length) {
-        addSection("EXPERIENCE")
+        sectionTitle("WORK EXPERIENCE")
         data.experience.forEach(exp => {
-            addLine(`${exp.title} — ${exp.company} (${exp.duration})`, 11, true)
-            exp.points?.forEach(p => addLine(`• ${p}`, 10))
+            checkPage(10)
+            doc.setFontSize(10)
+            doc.setFont("helvetica", "bold")
+            doc.text(`${exp.title}`, margin, y)
+            doc.setFont("helvetica", "normal")
+            doc.setFontSize(9)
+            doc.setTextColor(80, 80, 80)
+            doc.text(`${exp.company}  |  ${exp.duration}`, margin, y + 5)
+            doc.setTextColor(0, 0, 0)
+            y += 9
+            exp.points?.forEach(p => bulletLine(p))
             y += 2
         })
     }
 
-    // Projects
+    // ── PROJECTS ──
     if (data.projects?.length) {
-        addSection("PROJECTS")
+        sectionTitle("PROJECTS")
         data.projects.forEach(proj => {
-            addLine(`${proj.name} | ${proj.tech}`, 11, true)
-            addLine(proj.description, 10)
+            checkPage(12)
+            doc.setFontSize(10)
+            doc.setFont("helvetica", "bold")
+            const projTitle = proj.link ? `${proj.name}  →  ${proj.link}` : proj.name
+            doc.text(projTitle, margin, y)
+            y += 5
+            doc.setFontSize(9)
+            doc.setFont("helvetica", "italic")
+            doc.setTextColor(80, 80, 80)
+            doc.text(`Tech: ${proj.tech}`, margin, y)
+            doc.setTextColor(0, 0, 0)
+            doc.setFont("helvetica", "normal")
+            y += 5
+            bulletLine(proj.description)
             y += 2
         })
     }
 
-    // Education
+    // ── EDUCATION ──
     if (data.education?.length) {
-        addSection("EDUCATION")
+        sectionTitle("EDUCATION")
         data.education.forEach(edu => {
-            addLine(`${edu.degree} — ${edu.institution} (${edu.year})`)
+            checkPage(10)
+            doc.setFontSize(10)
+            doc.setFont("helvetica", "bold")
+            doc.text(edu.degree, margin, y)
+            doc.setFont("helvetica", "normal")
+            doc.setFontSize(9)
+            doc.setTextColor(80, 80, 80)
+            doc.text(`${edu.institution}  |  ${edu.year}  ${edu.grade ? `| ${edu.grade}` : ""}`, margin, y + 5)
+            doc.setTextColor(0, 0, 0)
+            y += 12
         })
+    }
+
+    // ── CERTIFICATIONS ──
+    if (data.certifications?.length) {
+        sectionTitle("CERTIFICATIONS")
+        data.certifications.forEach(cert => bulletLine(cert))
     }
 
     return Buffer.from(doc.output("arraybuffer"))
 }
-
-module.exports = { generateInterviewReport, generateResumePdf }
