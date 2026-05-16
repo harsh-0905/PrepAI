@@ -1,141 +1,209 @@
-# 🚀 PrepAI — Gen AI Job Preparation Web App
+# PrepAI — AI-Powered Interview Preparation
 
-A production-ready, full-stack AI-powered platform that helps job seekers upload resumes, analyze job descriptions, detect skill gaps, generate AI-driven interview questions, and download ATS-optimized resumes as PDFs.
-
----
-
-## 🛠 Tech Stack
-
-| Layer          | Technology                          |
-|----------------|-------------------------------------|
-| Frontend       | React.js, Vite, React Router        |
-| Backend        | Node.js, Express.js                 |
-| Database       | MongoDB Atlas (Mongoose)            |
-| Authentication | JWT + Token Blacklisting            |
-| AI             | Google Gemini API                   |
-| File Upload    | Multer                              |
-| PDF Generation | Puppeteer                           |
-| Validation     | Zod                                 |
-| HTTP Client    | Axios                               |
+PrepAI analyzes your resume and a target job description using AI to generate a personalized interview plan: technical questions, behavioral questions, skill gap analysis, a day-by-day preparation roadmap, and a tailored resume PDF.
 
 ---
 
-## ✨ Features
+## Tech Stack
 
-- 🔐 **Secure Auth** — JWT-based login/register with token blacklisting on logout
-- 📄 **Resume Parsing** — Upload resume and extract content server-side
-- 🤖 **AI Skill Gap Analysis** — Gemini AI compares resume vs job description
-- 🎯 **Interview Question Generation** — Role-specific questions with preparation tips
-- 📊 **Report History** — Save, view, and revisit all past interview reports
-- 🖨️ **ATS Resume PDF** — AI-restructured resume exported as PDF via Puppeteer
+**Backend** — Node.js, Express.js, MongoDB (Mongoose), JWT, Multer, pdf-parse, Puppeteer, Groq SDK
+
+**Frontend** — React 19, Vite, React Router v7, Axios, SCSS
+
+**AI** — Groq API (Llama 3.3 70B)
 
 ---
 
-## 📁 Folder Structure
+## Project Structure
 
 ```
-prepai/
-├── client/                    # React Frontend (Vite)
-│   └── src/
-│       ├── components/        # Reusable UI components
-│       ├── context/           # Auth & Interview Context
-│       ├── hooks/             # useAuth, useInterview
-│       ├── pages/             # Login, Register, Home, Interview
-│       └── services/          # Axios API service functions
-│
-└── server/                    # Node.js + Express Backend
-    ├── config/                # MongoDB connection
-    ├── controllers/           # Auth & Interview controllers
-    ├── middleware/            # JWT auth middleware
-    ├── models/                # User, Blacklist, InterviewReport
-    ├── routes/                # Auth & Interview routes
-    ├── services/              # Gemini AI service
-    └── utils/                 # Puppeteer PDF generator
+YT-GENAI/
+├── Backend/
+│   ├── src/
+│   │   ├── config/         # MongoDB connection
+│   │   ├── controllers/    # Route handlers
+│   │   ├── middlewares/    # Auth (JWT) + File upload (Multer)
+│   │   ├── models/         # Mongoose schemas
+│   │   ├── routes/         # Express routers
+│   │   └── services/       # AI (Groq) + PDF generation (Puppeteer)
+│   ├── server.js
+│   └── package.json
+├── Frontend/
+│   ├── src/
+│   │   ├── features/
+│   │   │   ├── auth/       # Login, Register, Protected route
+│   │   │   └── interview/  # Home, Interview report, hooks, API
+│   │   ├── App.jsx
+│   │   └── app.routes.jsx
+│   └── package.json
+├── .gitignore
+├── netlify.toml
+├── render.yaml
+└── README.md
 ```
 
 ---
 
-## ⚙️ How It Works
+## Local Setup
 
-**1. Authentication**
-- Register → password hashed → JWT issued and stored in HTTP-only cookie
-- On logout → token is blacklisted in MongoDB, preventing reuse
+### 1. Clone the repo
 
-**2. AI Interview Report**
-- User uploads resume + enters job description
-- Gemini AI detects skill gaps and generates targeted interview questions
-- Report is saved to MongoDB and accessible anytime
-
-**3. ATS Resume PDF**
-- AI restructures resume content for ATS compatibility
-- Puppeteer renders it as styled HTML and exports a downloadable PDF
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js v18+
-- MongoDB Atlas account
-- Google Gemini API Key
-
-### Backend
 ```bash
-cd server
-npm install
-npm run dev
+git clone https://github.com/your-username/prepai.git
+cd prepai
 ```
 
-### Frontend
+### 2. Backend
+
 ```bash
-cd client
+cd Backend
 npm install
-npm run dev
 ```
 
----
-
-## 🔑 Environment Variables
-
-Create a `.env` file inside `/server`:
+Create `Backend/.env`:
 
 ```env
-PORT=5000
-MONGO_URI=your_mongodb_atlas_uri
-JWT_SECRET=your_jwt_secret
-JWT_EXPIRES_IN=7d
-GEMINI_API_KEY=your_gemini_api_key
-CLIENT_URL=http://localhost:5173
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=any_random_secret_string
+GROQ_API_KEY=your_groq_api_key
+PORT=3000
 ```
 
----
+```bash
+npm run dev
+```
 
-## 📡 API Reference
+### 3. Frontend
 
-### Auth — `/api/auth`
-| Method | Endpoint    | Description           | Auth |
-|--------|-------------|-----------------------|------|
-| POST   | `/register` | Register new user     | ❌   |
-| POST   | `/login`    | Login, receive JWT    | ❌   |
-| POST   | `/logout`   | Logout + blacklist    | ✅   |
-| GET    | `/me`       | Get logged-in user    | ✅   |
+```bash
+cd Frontend
+npm install
+npm run dev
+```
 
-### Interview — `/api/interview`
-| Method | Endpoint       | Description                    | Auth |
-|--------|----------------|--------------------------------|------|
-| POST   | `/generate`    | Upload resume + JD → AI report | ✅   |
-| GET    | `/reports`     | Get all user reports           | ✅   |
-| GET    | `/reports/:id` | Get report by ID               | ✅   |
-| POST   | `/resume-pdf`  | Generate ATS resume PDF        | ✅   |
+Frontend: `http://localhost:5173` — Backend: `http://localhost:3000`
 
 ---
 
-## 👨‍💻 Author
+## Environment Variables
 
-**Harsh Yadav**  
-MCA Final Year | Full Stack Developer  
-🔗 [Portfolio](https://portfolio-7ivq.vercel.app) · [GitHub](https://github.com/harsh-0905)
+| Variable | Description |
+|---|---|
+| `MONGO_URI` | MongoDB Atlas connection string |
+| `JWT_SECRET` | Random secret for signing JWTs |
+| `GROQ_API_KEY` | Free API key from console.groq.com |
 
 ---
 
-> ⭐ Star this repo if you found it helpful!
+## Deployment
+
+### Step 1 — Push to GitHub
+
+Run these commands from inside your `YT-GENAI` project folder:
+
+```bash
+git init
+git add .
+git commit -m "initial commit"
+git branch -M main
+git remote add origin https://github.com/your-username/prepai.git
+git push -u origin main
+```
+
+### Step 2 — Deploy Backend on Render
+
+1. Go to [render.com](https://render.com) → **New** → **Web Service**
+2. Connect your GitHub repo
+3. Configure:
+   - Root Directory: `Backend`
+   - Build Command: `npm install`
+   - Start Command: `node server.js`
+4. Add environment variables: `MONGO_URI`, `JWT_SECRET`, `GROQ_API_KEY`
+5. Deploy — copy your backend URL (e.g. `https://prepai-backend.onrender.com`)
+
+### Step 3 — Update Frontend API URLs
+
+Before deploying frontend, update the `baseURL` in both files:
+
+`Frontend/src/features/auth/services/auth.api.js`:
+```js
+baseURL: "https://prepai-backend.onrender.com"
+```
+
+`Frontend/src/features/interview/services/interview.api.js`:
+```js
+baseURL: "https://prepai-backend.onrender.com"
+```
+
+Commit and push:
+```bash
+git add .
+git commit -m "update api base url for production"
+git push
+```
+
+### Step 4 — Deploy Frontend on Netlify
+
+1. Go to [netlify.com](https://netlify.com) → **Add new site** → **Import from Git**
+2. Connect your GitHub repo
+3. Configure:
+   - Base directory: `Frontend`
+   - Build command: `npm run build`
+   - Publish directory: `Frontend/dist`
+4. Deploy
+
+The `netlify.toml` file handles React Router redirects automatically — no extra setup needed.
+
+---
+
+## API Reference
+
+### Auth
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/auth/register` | Register `{ username, email, password }` |
+| POST | `/api/auth/login` | Login `{ email, password }` |
+| GET | `/api/auth/logout` | Logout |
+| GET | `/api/auth/get-me` | Get current logged-in user |
+
+### Interview
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/interview/` | Generate report (multipart: `resume` PDF + `jobDescription` + `selfDescription`) |
+| GET | `/api/interview/` | Get all reports for current user |
+| GET | `/api/interview/report/:id` | Get single report by ID |
+| POST | `/api/interview/resume/pdf/:id` | Download tailored resume as PDF |
+
+---
+
+## Features
+
+- Upload PDF resume or type a self-description
+- Paste any job description
+- AI generates:
+  - Match score (0–100%)
+  - 5 technical questions with model answers
+  - 5 behavioral questions with model answers
+  - Skill gaps with severity (low / medium / high)
+  - 7-day preparation plan
+- Download a tailored resume PDF built for the target role
+- All past reports saved and viewable from home page
+
+---
+
+## Known Limitations
+
+- Render free tier sleeps after 15 min idle — first request takes ~30s to wake up
+- Puppeteer PDF generation is CPU-heavy; may be slow on Render free tier
+- Groq free tier: 14,400 requests/day, 30 req/min on Llama 3.3 70B
+
+---
+
+## Author
+
+**Harsh Yadav**
+GitHub: [github.com/harsh-0905](https://github.com/harsh-0905)
+Portfolio: [portfolio-7ivq.vercel.app](https://portfolio-7ivq.vercel.app)
+LinkedIn: [linkedin.com/in/harshyadav95-dev](https://linkedin.com/in/harshyadav95-dev)
