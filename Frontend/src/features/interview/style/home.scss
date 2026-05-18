@@ -1,6 +1,5 @@
 @use 'sass:color';
 
-// ── Variables ────────────────────────────────────────────────────────────────
 $bg-page:        #0d1117;
 $bg-card:        #161b22;
 $bg-panel:       #1c2230;
@@ -16,28 +15,30 @@ $info-bg:        #1b2a4a;
 $info-border:    #2d4a7a;
 $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-// ── Page Shell ───────────────────────────────────────────────────────────────
+$bp-mobile:  480px;
+$bp-tablet:  768px;
+$bp-desktop: 960px;
+
 .home-page {
     width: 100%;
     min-height: 100vh;
     background-color: $bg-page;
     color: $text-primary;
     font-family: $font-stack;
-
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 3rem 1.5rem;
+    justify-content: flex-start;
+    padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 4vw, 1.5rem);
     gap: 2rem;
 }
 
-// ── Page Header ──────────────────────────────────────────────────────────────
 .page-header {
     text-align: center;
+    width: 100%;
 
     h1 {
-        font-size: 2.25rem;
+        font-size: clamp(1.5rem, 5vw, 2.25rem);
         font-weight: 700;
         margin-bottom: 0.5rem;
         color: $text-primary;
@@ -45,7 +46,7 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
 
     p {
         color: $text-muted;
-        font-size: 0.95rem;
+        font-size: clamp(0.85rem, 2vw, 0.95rem);
         max-width: 480px;
         margin: 0 auto;
         line-height: 1.6;
@@ -56,7 +57,6 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
     }
 }
 
-// ── Main Card ─────────────────────────────────────────────────────────────────
 .interview-card {
     width: 100%;
     max-width: 900px;
@@ -67,15 +67,34 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
 
     &__body {
         display: flex;
-        min-height: 520px;
+        flex-direction: column;
+
+        @media (min-width: $bp-tablet) {
+            flex-direction: row;
+            min-height: 520px;
+        }
     }
 
     &__footer {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 1rem 1.5rem;
+        padding: 0.875rem 1.25rem;
         border-top: 1px solid $border-color;
+        gap: 1rem;
+
+        @media (max-width: $bp-mobile) {
+            flex-direction: column;
+            align-items: stretch;
+
+            .footer-info {
+                text-align: center;
+            }
+
+            .generate-btn {
+                justify-content: center;
+            }
+        }
 
         .footer-info {
             font-size: 0.8rem;
@@ -84,11 +103,16 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
     }
 }
 
-// ── Panels ────────────────────────────────────────────────────────────────────
 .panel-divider {
-    width: 1px;
+    width: 100%;
+    height: 1px;
     background-color: $border-color;
     flex-shrink: 0;
+
+    @media (min-width: $bp-tablet) {
+        width: 1px;
+        height: auto;
+    }
 }
 
 .panel {
@@ -96,19 +120,25 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    padding: 1.5rem;
+    padding: 1.25rem;
+
+    @media (min-width: $bp-tablet) {
+        padding: 1.5rem;
+    }
 
     &__header {
         display: flex;
         align-items: center;
         gap: 0.5rem;
         margin-bottom: 0.25rem;
+        flex-wrap: wrap;
 
         h2 {
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 600;
             color: $text-primary;
             flex: 1;
+            min-width: 0;
         }
     }
 
@@ -116,6 +146,7 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
         display: flex;
         align-items: center;
         color: $accent;
+        flex-shrink: 0;
     }
 
     &__textarea {
@@ -128,10 +159,11 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
         color: $text-primary;
         font-family: $font-stack;
         font-size: 0.875rem;
-        resize: none;
+        resize: vertical;
         outline: none;
         transition: border-color 0.2s;
         line-height: 1.5;
+        min-height: 140px;
 
         &::placeholder {
             color: $text-muted;
@@ -143,7 +175,13 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
 
         &--short {
             flex: unset;
+            min-height: unset;
             height: 96px;
+            resize: none;
+        }
+
+        @media (min-width: $bp-tablet) {
+            min-height: unset;
         }
     }
 
@@ -151,11 +189,11 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
         position: relative;
 
         .char-counter {
-            position: absolute;
-            bottom: 2.25rem;
-            right: 2rem;
+            display: flex;
+            justify-content: flex-end;
             font-size: 0.75rem;
             color: $text-muted;
+            margin-top: -0.5rem;
         }
     }
 
@@ -164,7 +202,6 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
     }
 }
 
-// ── Badges ────────────────────────────────────────────────────────────────────
 .badge {
     font-size: 0.7rem;
     font-weight: 600;
@@ -172,6 +209,7 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
     border-radius: 0.3rem;
     text-transform: uppercase;
     letter-spacing: 0.03em;
+    white-space: nowrap;
 
     &--required {
         background-color: rgba($badge-required, 0.15);
@@ -186,7 +224,6 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
     }
 }
 
-// ── Section Label ─────────────────────────────────────────────────────────────
 .section-label {
     display: flex;
     align-items: center;
@@ -195,9 +232,9 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
     font-weight: 500;
     color: $text-primary;
     margin-bottom: 0.25rem;
+    flex-wrap: wrap;
 }
 
-// ── Dropzone ──────────────────────────────────────────────────────────────────
 .upload-section {
     display: flex;
     flex-direction: column;
@@ -210,12 +247,14 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
     align-items: center;
     justify-content: center;
     gap: 0.35rem;
-    padding: 1.5rem 1rem;
+    padding: 1.25rem 1rem;
     background-color: $bg-input;
     border: 2px dashed $border-color;
     border-radius: 0.6rem;
     cursor: pointer;
     transition: border-color 0.2s, background-color 0.2s;
+    width: 100%;
+    min-height: 80px;
 
     &:hover {
         border-color: $accent;
@@ -232,6 +271,8 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
         font-weight: 500;
         color: $text-primary;
         margin: 0;
+        text-align: center;
+        word-break: break-word;
     }
 
     &__subtitle {
@@ -241,7 +282,6 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
     }
 }
 
-// ── OR Divider ────────────────────────────────────────────────────────────────
 .or-divider {
     display: flex;
     align-items: center;
@@ -262,14 +302,12 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
     }
 }
 
-// ── Self Description ──────────────────────────────────────────────────────────
 .self-description {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
 }
 
-// ── Info Box ──────────────────────────────────────────────────────────────────
 .info-box {
     display: flex;
     align-items: flex-start;
@@ -297,10 +335,10 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
     }
 }
 
-// ── Generate Button ───────────────────────────────────────────────────────────
 .generate-btn {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
     padding: 0.75rem 1.5rem;
     background: linear-gradient(135deg, $accent 0%, color.adjust($accent, $lightness: -10%) 100%);
@@ -312,6 +350,12 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
     cursor: pointer;
     transition: opacity 0.2s, transform 0.1s;
     font-family: $font-stack;
+    white-space: nowrap;
+
+    @media (max-width: $bp-mobile) {
+        font-size: 0.875rem;
+        padding: 0.75rem 1rem;
+    }
 
     &:hover {
         opacity: 0.9;
@@ -322,45 +366,83 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
     }
 }
 
-.recent-reports{
+.recent-reports {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
     width: 100%;
     max-width: 900px;
 
-    .reports-list{
-        display: flex;
-        gap: 0.75rem;
-        flex-wrap: wrap;
+    h2 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: $text-primary;
+    }
 
-        .report-item{
+    .reports-list {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+
+        @media (min-width: $bp-mobile) {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        @media (min-width: $bp-desktop) {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .report-item {
             background-color: $bg-card;
             border: 1px solid $border-color;
             border-radius: 0.5rem;
             padding: 1rem;
-            flex: 1;
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
             cursor: pointer;
-            flex-shrink: 0;
+            transition: border-color 0.2s, background-color 0.15s;
+
+            &:hover {
+                border-color: $accent;
+                background-color: color.adjust($bg-card, $lightness: 3%);
+            }
+
+            h3 {
+                font-size: 0.9rem;
+                font-weight: 600;
+                color: $text-primary;
+                margin: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .report-meta {
+                font-size: 0.78rem;
+                color: $text-muted;
+                margin: 0;
+            }
 
             .match-score {
                 font-size: 0.8rem;
                 font-weight: 600;
-                color: $accent;
-                align-items: flex-start;
+                margin: 0;
+
+                &.score--high { color: #3fb950; }
+                &.score--mid  { color: #f5a623; }
+                &.score--low  { color: #ff4d4d; }
             }
         }
     }
 }
 
-
-// ── Page Footer ───────────────────────────────────────────────────────────────
 .page-footer {
     display: flex;
-    gap: 1.5rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 0.5rem 0;
 
     a {
         font-size: 0.8rem;
@@ -373,10 +455,10 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
         }
     }
 }
-// ── Error box ─────────────────────────────────────────────────────────────────
+
 .error-box {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.5rem;
     padding: 0.65rem 0.9rem;
     border-radius: 0.5rem;
@@ -385,9 +467,9 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
     color: #ff4d4d;
     font-size: 0.835rem;
     margin-top: 0.5rem;
+    line-height: 1.4;
 }
 
-// ── Dropzone selected state ───────────────────────────────────────────────────
 .dropzone--selected {
     border-color: #3fb950 !important;
     background-color: rgba(#3fb950, 0.05) !important;

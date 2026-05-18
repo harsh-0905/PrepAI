@@ -5,16 +5,27 @@
     padding-block: 0.75rem;
     border-radius: 1rem;
     cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease-in-out;
+    max-width: 100%;
+    white-space: nowrap;
 
-    transition: all 0.3s ease-in-out ;
+    &.primary-button {
+        background-color: rgb(165, 17, 17);
+        color: white;
 
-&.primary-button {
-    background-color: rgb(165, 17, 17);
-    color: white;
+        &:hover {
+            background-color: rgb(190, 20, 20);
+        }
+    }
 
+    &:active {
+        transform: scale(0.96);
+    }
 }
-&:active {
-    transform: scale(0.9);
-}
-}
-
