@@ -1,34 +1,38 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import "../style/home.scss"
 import { useInterview } from '../hooks/useInterview.js'
 import { useNavigate } from 'react-router'
 
 const Home = () => {
-    const { loading, generateReport, reports } = useInterview()
+    const { loading, generateReport, getReports, reports, error } = useInterview()
     const [jobDescription, setJobDescription] = useState("")
     const [selfDescription, setSelfDescription] = useState("")
     const [selectedFileName, setSelectedFileName] = useState("")
-    const [error, setError] = useState("")
+    const [localError, setLocalError] = useState("")
     const resumeInputRef = useRef()
     const navigate = useNavigate()
+
+    useEffect(() => {
+        getReports()
+    }, [])
 
     const handleFileChange = (e) => {
         const file = e.target.files[0]
         if (file) {
             setSelectedFileName(file.name)
-            setError("")
+            setLocalError("")
         }
     }
 
     const handleGenerateReport = async () => {
-        setError("")
+        setLocalError("")
         if (!jobDescription.trim()) {
-            setError("Job description is required.")
+            setLocalError("Job description is required.")
             return
         }
         const resumeFile = resumeInputRef.current.files[0]
         if (!resumeFile && !selfDescription.trim()) {
-            setError("Please upload a resume or enter a self description.")
+            setLocalError("Please upload a resume or enter a self description.")
             return
         }
         const data = await generateReport({ jobDescription, selfDescription, resumeFile })
@@ -36,6 +40,8 @@ const Home = () => {
             navigate(`/interview/${data._id}`)
         }
     }
+
+    const displayError = localError || error
 
     if (loading) {
         return (
@@ -119,8 +125,8 @@ const Home = () => {
                             />
                         </div>
 
-                        {error ? (
-                            <div className='error-box'><span>⚠ {error}</span></div>
+                        {displayError ? (
+                            <div className='error-box'><span>⚠ {displayError}</span></div>
                         ) : (
                             <div className='info-box'>
                                 <span className='info-box__icon'>

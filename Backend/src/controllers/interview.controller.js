@@ -115,7 +115,11 @@ async function generateResumePdfController(req, res) {
     try {
         const { interviewReportId } = req.params
 
-        const interviewReport = await interviewReportModel.findById(interviewReportId)
+        // Fix: verify report belongs to the requesting user
+        const interviewReport = await interviewReportModel.findOne({
+            _id: interviewReportId,
+            user: req.user.id
+        })
 
         if (!interviewReport) {
             return res.status(404).json({ message: "Interview report not found." })
