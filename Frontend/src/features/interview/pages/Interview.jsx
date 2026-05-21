@@ -115,7 +115,9 @@ const Interview = () => {
                         </button>
                         <button
                             onClick={() => { getResumePdf(interviewId) }}
-                            className='button primary-button'></button>
+                            className='button primary-button'>
+                            ✦ Download Resume
+                        </button>
                     </div>
                 </nav>
 
